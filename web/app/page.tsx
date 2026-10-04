@@ -5,6 +5,7 @@ import { Fairness } from "@/components/landing/Fairness";
 import { Faq } from "@/components/landing/Faq";
 import { FinalCta } from "@/components/landing/FinalCta";
 import { Hero } from "@/components/landing/Hero";
+import { SkyBackdrop } from "@/components/landing/SkyBackdrop";
 import { MakeBank } from "@/components/landing/MakeBank";
 import { StatStrip } from "@/components/landing/StatStrip";
 import { TrustBar } from "@/components/landing/TrustBar";
@@ -17,6 +18,9 @@ export default async function Home() {
   const live = campaigns.filter((c) => c.status === "Active").slice(0, 3);
   return (
     <>
+      {/* the sky sits behind the hero and keeps going down through the next few sections */}
+      <div className="relative isolate -mt-[4.5rem]">
+        <SkyBackdrop />
       <Hero totals={totals} />
       <TrustBar />
       <div className="px-4 pt-12"><StatStrip totals={totals} /></div>
@@ -33,6 +37,7 @@ export default async function Home() {
           {live.map((c) => <CampaignCard key={c.id} campaign={c} now={NOW} />)}
         </div>
       </section>
+      </div>
 
       <MakeBank />
       <BriefFlow />

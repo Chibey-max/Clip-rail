@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Providers } from "@/components/Providers";
+import { THEME_SCRIPT } from "@/components/site/ThemeToggle";
 import "./globals.css";
 
 // Fonts are bundled (SIL OFL, from Fontsource) so dev and builds never download from Google at runtime.
@@ -16,11 +17,19 @@ export const metadata: Metadata = {
     "Brands fund clipping campaigns in escrow on Monad. Clippers are paid in USDC per verified YouTube Shorts view.",
 };
 
-export const viewport: Viewport = { themeColor: "#f6f6f2" };
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f6f2" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0b14" },
+  ],
+};
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${display.variable} ${mono.variable}`}>
+    <html lang="en" data-theme="light" data-sky="afternoon" data-mode="auto" suppressHydrationWarning className={`${inter.variable} ${display.variable} ${mono.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="flex min-h-dvh flex-col">
         <Providers>
           <Header />

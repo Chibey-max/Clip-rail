@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Theme is driven by <html data-theme="light|dark"> (set before paint by the script in app/layout.tsx). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+/* Hero sky phase: <html data-sky="morning|afternoon|evening|night">. Auto mode picks it from the local clock. */
+/* data-daymoon: late afternoon (auto mode, 15:00+), when a faint moon is up in the daytime sky. */
+@custom-variant daymoon (&:where([data-daymoon], [data-daymoon] *));
+@custom-variant sky-morning (&:where([data-sky="morning"], [data-sky="morning"] *));
+@custom-variant sky-afternoon (&:where([data-sky="afternoon"], [data-sky="afternoon"] *));
+@custom-variant sky-evening (&:where([data-sky="evening"], [data-sky="evening"] *));
+@custom-variant sky-night (&:where([data-sky="night"], [data-sky="night"] *));
+
 /*
  * Light "bright creator" theme (docs/design.md, moodboard direction A).
  * Monad violet is the brand accent; green is reserved for verified or paid money.
@@ -35,6 +45,9 @@
 
   --animate-float: float 7s ease-in-out infinite;
   --animate-marquee: marquee 40s linear infinite;
+  --animate-drift: drift 90s linear infinite;
+  --animate-twinkle: twinkle 3.5s ease-in-out infinite;
+  --animate-shoot: shoot 9s ease-in infinite;
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-8px); }
@@ -43,6 +56,41 @@
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
   }
+  @keyframes drift {
+    from { transform: translateX(-12vw); }
+    to { transform: translateX(112vw); }
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 1; }
+  }
+  @keyframes shoot {
+    0%, 86% { opacity: 0; transform: translate(0, 0) rotate(-28deg); }
+    88% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-420px, 220px) rotate(-28deg); }
+  }
+}
+
+/* Night theme tokens: same names, so every component switches automatically. */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #0a0b14;
+  --color-surface: #13141f;
+  --color-surface-2: #1b1c2a;
+  --color-line: #2a2b3d;
+  --color-fg: #f2f1fa;
+  --color-muted: #9d9cb3;
+  --color-accent: #8b74ff;
+  --color-accent-hover: #a08cff;
+  --color-accent-soft: #231f45;
+  --color-ink: #1f2033;
+  --color-night: #05060c;
+  --color-money: #2bd98a;
+  --color-holding: #f5b83d;
+  --color-danger: #ff5a6e;
+  --color-info: #5ab4ff;
+  --shadow-float: 0 1px 2px rgb(0 0 0 / 0.3), 0 16px 40px -10px rgb(0 0 0 / 0.6);
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 20px -8px rgb(0 0 0 / 0.5);
 }
 
 @layer base {
@@ -52,6 +100,7 @@
   html {
     background: var(--color-bg);
     color: var(--color-fg);
+    transition: background-color 0.5s ease;
   }
   body {
     @apply bg-bg font-sans text-fg antialiased;
@@ -70,6 +119,48 @@
   @media (prefers-reduced-motion: reduce) {
     *, ::before, ::after { animation: none !important; transition: none !important; }
   }
+}
+
+/* ---------- Sky wheel: the sun and moon ride one big circle that turns clockwise (rise left, set right) ----------
+   --sky-turn / --moon-turn (deg, set by ThemeToggle) are the sun's and moon's angles: 0 = straight up, 90 = right
+   horizon, -90 = left horizon. The moon trails the sun across the sky, so it is up in the late afternoon, evening and night.
+   The wheel's centre sits on the "horizon"; anything below it is masked away, except the sun's glow, which keeps
+   lighting the horizon after sunset (afterglow). JS keeps adding to --sky-turn so the wheel never spins backwards, and sets --sky-dur so a multi-phase change is one
+   continuous turn (no pause at each phase). */
+.cr-sky { --sky-r: 52rem; --sky-h: 46rem; }
+.cr-wheel {
+  position: absolute; left: 50%; top: var(--sky-h); width: 0; height: 0;
+  rotate: calc(var(--sky-turn, 35) * 1deg);
+  transition: rotate var(--sky-dur, 1.4s) cubic-bezier(.45, 0, .55, 1);
+}
+.cr-arm-sun { position: absolute; translate: 0 calc(var(--sky-r) * -1); }
+.cr-wheel-moon { rotate: calc(var(--moon-turn, -110) * 1deg); }
+.cr-arm-moon { position: absolute; translate: 0 calc(var(--sky-r) * -1); }
+/* keep the moon upright while its wheel turns */
+.cr-moon-upright { rotate: calc(var(--moon-turn, -110) * -1deg); transition: rotate var(--sky-dur, 1.4s) cubic-bezier(.45, 0, .55, 1); }
+.cr-below-horizon { position: absolute; inset: 0; mask-image: linear-gradient(to bottom, black calc(var(--sky-h) - 8rem), transparent var(--sky-h)); }
+
+/* sun colour: white high in the sky, warm low down (longer path through the air scatters the blue) */
+.cr-sun-day, .cr-sun-dusk, .cr-moon-glow, .cr-sun-glow { transition: opacity 1.4s; }
+.cr-sun-dusk, .cr-moon-glow { opacity: 0; }
+[data-sky="morning"] .cr-sun-dusk, [data-daymoon] .cr-sun-dusk { opacity: .6; }
+[data-sky="evening"] .cr-sun-dusk, [data-sky="night"] .cr-sun-dusk { opacity: 1; }
+[data-sky="evening"] .cr-sun-day, [data-sky="night"] .cr-sun-day { opacity: 0; }
+[data-sky="night"] .cr-sun-glow { opacity: 0; }
+[data-sky="night"] .cr-moon-glow { opacity: 1; }
+/* moon brightness: pale by day, brighter at dusk, full at night */
+.cr-moon { opacity: .3; transition: opacity 1.4s; }
+[data-sky="evening"] .cr-moon { opacity: .85; }
+[data-sky="night"] .cr-moon { opacity: 1; }
+
+/* phones: smaller wheel, horizon higher, so the sun and moon stay on screen */
+@media (max-width: 639px) {
+  .cr-sky { --sky-r: 20rem; --sky-h: 26rem; }
+}
+
+/* while the theme animates, let page colours ease too (the sky has its own transitions) */
+.theme-anim :where(body *:not(.cr-sky, .cr-sky *)) {
+  transition: background-color 1.2s ease, border-color 1.2s ease, color 1.2s ease, fill 1.2s ease !important;
 }
 
 @utility tabular {
@@ -98,4 +189,17 @@
 @utility dots {
   background-image: radial-gradient(rgb(18 18 22 / 0.07) 1px, transparent 1px);
   background-size: 18px 18px;
+}
+
+/* Pin light tokens inside "screenshot" cards that must look the same in both themes. */
+@utility force-light {
+  --color-surface: #ffffff;
+  --color-surface-2: #f1f0ea;
+  --color-line: #e4e2da;
+  --color-fg: #121216;
+  --color-muted: #6b6a75;
+  --color-ink: #121216;
+  --color-money: #10a24b;
+  --color-accent: #6e54ff;
+  color: #121216;
 }
