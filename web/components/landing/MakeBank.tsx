@@ -11,7 +11,7 @@ function Frame({ children }: { children: React.ReactNode }) {
 
 function CampaignMini() {
   return (
-    <div className="w-full max-w-[16rem] rounded-2xl bg-white p-4 text-ink shadow-xl">
+    <div className="w-full max-w-[16rem] force-light rounded-2xl bg-white p-4 shadow-xl">
       <div className="flex items-center gap-2">
         <Avatar name="Northwind Games" size={34} />
         <div>
@@ -33,7 +33,7 @@ function CampaignMini() {
 
 function RegisterMini() {
   return (
-    <div className="w-full max-w-[16rem] rounded-2xl bg-white p-4 text-ink shadow-xl">
+    <div className="w-full max-w-[16rem] force-light rounded-2xl bg-white p-4 shadow-xl">
       <div className="text-[10px] font-medium tracking-wider text-muted uppercase">Your claim code</div>
       <div className="mt-1 flex items-center justify-between">
         <code className="font-mono text-lg font-bold">CR-3FA9B21C</code>
@@ -51,7 +51,7 @@ function RegisterMini() {
 
 function BalanceMini() {
   return (
-    <div className="w-full max-w-[16rem] rounded-2xl bg-white p-5 text-ink shadow-xl">
+    <div className="w-full max-w-[16rem] force-light rounded-2xl bg-white p-5 shadow-xl">
       <div className="text-sm text-muted">Available balance</div>
       <div className="mt-1 flex items-center justify-between">
         <span className="tabular font-display text-3xl font-bold">$41.25</span>

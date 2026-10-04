@@ -11,7 +11,7 @@ const rows = [
 /** A browser-framed miniature of the clipper dashboard (Airaa-style product shot), built from our real components. */
 export function ProductWindow() {
   return (
-    <div className="overflow-hidden rounded-[22px] border border-white/80 bg-white/70 p-1.5 shadow-[0_30px_80px_-30px_rgb(18_18_22/0.35)] backdrop-blur">
+    <div className="overflow-hidden rounded-[22px] border border-white/80 bg-white/70 p-1.5 dark:border-white/10 dark:bg-white/5 shadow-[0_30px_80px_-30px_rgb(18_18_22/0.35)] backdrop-blur">
       <div className="flex items-center gap-1.5 px-3 py-2">
         <span className="size-2.5 rounded-full bg-[#ff5f57]" />
         <span className="size-2.5 rounded-full bg-[#febc2e]" />
