@@ -1,48 +1,101 @@
 @import "tailwindcss";
 
-/* Tokens from docs/design.md. Green (money) is only for verified or paid amounts. */
+/*
+ * Light "bright creator" theme (docs/design.md, moodboard direction A).
+ * Monad violet is the brand accent; green is reserved for verified or paid money.
+ */
 @theme {
-  --color-bg: #0b0a10;
-  --color-surface: #15131d;
-  --color-surface-2: #1e1b29;
-  --color-line: #2a2638;
-  --color-fg: #f4f2fa;
-  --color-muted: #a39fb5;
-  --color-accent: #7c5cff;
-  --color-accent-hover: #8f74ff;
+  --color-bg: #f6f6f2;
+  --color-surface: #ffffff;
+  --color-surface-2: #f1f0ea;
+  --color-line: #e4e2da;
+  --color-fg: #121216;
+  --color-muted: #6b6a75;
+  --color-accent: #6e54ff;
+  --color-accent-hover: #5a3ff0;
   --color-accent-fg: #ffffff;
-  --color-money: #2bd98a;
-  --color-holding: #f5b83d;
-  --color-danger: #ff5a6e;
-  --color-info: #5ab4ff;
+  --color-accent-soft: #eeeaff;
+  --color-ink: #121216;
+  --color-night: #0f0f13;
+  --color-money: #10a24b;
+  --color-holding: #c27a00;
+  --color-danger: #e5484d;
+  --color-info: #2f7ded;
+  --color-sky: #cfe6fb;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-face), var(--font-inter), ui-sans-serif, sans-serif;
   --font-mono: var(--font-mono-face), ui-monospace, monospace;
 
-  --radius-card: 12px;
-  --radius-control: 10px;
+  --radius-card: 18px;
+  --radius-control: 12px;
+
+  --shadow-float: 0 1px 2px rgb(18 18 22 / 0.04), 0 12px 32px -8px rgb(18 18 22 / 0.14);
+  --shadow-soft: 0 1px 2px rgb(18 18 22 / 0.04), 0 4px 16px -6px rgb(18 18 22 / 0.08);
+
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-marquee: marquee 40s linear infinite;
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
 }
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
   }
   html {
     background: var(--color-bg);
     color: var(--color-fg);
   }
   body {
-    @apply bg-bg text-fg font-sans antialiased;
+    @apply bg-bg font-sans text-fg antialiased;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.025em;
   }
   ::selection {
-    background: color-mix(in srgb, var(--color-accent) 40%, transparent);
+    background: color-mix(in srgb, var(--color-accent) 25%, transparent);
   }
   :focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after { animation: none !important; transition: none !important; }
+  }
 }
 
 @utility tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* Mono small-caps label: "CLIP · POST · GET PAID" */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* Bright sky backdrop for the hero, built from gradients (no stock imagery). */
+@utility sky {
+  background:
+    radial-gradient(60% 45% at 18% 22%, rgb(255 255 255 / 0.95), transparent 70%),
+    radial-gradient(45% 35% at 82% 18%, rgb(255 255 255 / 0.85), transparent 70%),
+    radial-gradient(55% 40% at 70% 62%, rgb(255 255 255 / 0.7), transparent 70%),
+    radial-gradient(40% 30% at 25% 70%, rgb(238 234 255 / 0.9), transparent 70%),
+    linear-gradient(180deg, #b9dcfa 0%, #d8ebfb 45%, #f6f6f2 100%);
+}
+
+@utility dots {
+  background-image: radial-gradient(rgb(18 18 22 / 0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
 }

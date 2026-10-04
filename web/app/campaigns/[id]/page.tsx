@@ -20,7 +20,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
   const free = Math.max(c.budget - c.reserved - c.paid, 0);
   const clips = await getClipsForCampaign(c.id);
   const rules = [
-    { label: "Rate", value: `${usd(c.cpm)} per 1,000 views`, tip: "Paid in USDC for every 1,000 views the oracle verifies." },
+    { label: "Rate", value: `${usd(c.cpm * 1000, { cents: false })} per 1M views`, tip: `${usd(c.cpm)} for every 1,000 views the oracle verifies, paid in USDC.` },
     { label: "Max per clip", value: usd(c.maxPerClip), tip: "One clip can't earn more than this, so the budget is shared." },
     { label: "Like floor", value: percent(c.minLikeBps), tip: "Views on a clip with fewer likes than this share of views earn nothing. Stops botted views." },
     { label: "Hold window", value: duration(c.holdSecs), tip: "Earnings wait this long before paying out, so the brand can flag fraud." },
@@ -64,7 +64,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
         <Card className="flex flex-col gap-5">
           <div>
             <div className="text-xs font-medium uppercase tracking-wide text-muted">Rate</div>
-            <div className="tabular mt-1 text-3xl font-bold">{usd(c.cpm)}<span className="text-base font-normal text-muted"> / 1k views</span></div>
+            <div className="tabular mt-1 font-display text-3xl font-bold">{usd(c.cpm * 1000, { cents: false })}<span className="text-base font-normal text-muted"> / 1M views</span></div>
           </div>
           <div>
             <div className="mb-2 flex justify-between text-xs text-muted">
