@@ -7,17 +7,18 @@ import { LinkButton } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Tip } from "@/components/ui/Tip";
 import { count, duration, percent, timeLeft, usd, viewsBuyable } from "@/lib/format";
-import { clipsForCampaign, getCampaign, NOW } from "@/mocks/data";
+import { getCampaign, getClipsForCampaign, now } from "@/lib/data";
 
 const YT_ID = /^[A-Za-z0-9_-]{11}$/;
 
 export default async function CampaignPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const c = getCampaign(id);
+  const c = await getCampaign(id);
+  const NOW = now();
   if (!c) notFound();
 
   const free = Math.max(c.budget - c.reserved - c.paid, 0);
-  const clips = clipsForCampaign(c.id);
+  const clips = await getClipsForCampaign(c.id);
   const rules = [
     { label: "Rate", value: `${usd(c.cpm)} per 1,000 views`, tip: "Paid in USDC for every 1,000 views the oracle verifies." },
     { label: "Max per clip", value: usd(c.maxPerClip), tip: "One clip can't earn more than this, so the budget is shared." },
