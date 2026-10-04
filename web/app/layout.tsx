@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Providers } from "@/components/Providers";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono-face" });
+// Fonts are bundled (SIL OFL, from Fontsource) so dev and builds never download from Google at runtime.
+const inter = localFont({ src: "./fonts/Inter.woff2", variable: "--font-inter", weight: "100 900", display: "swap" });
+const mono = localFont({ src: "./fonts/JetBrainsMono.woff2", variable: "--font-mono-face", weight: "100 800", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Cliprail: get paid for every verified view",
