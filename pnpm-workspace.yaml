@@ -1,0 +1,6 @@
+packages:
+  - "web"
+  - "ops"
+  - "indexer"
+  - "cre"
+  - "packages/*"

@@ -1,0 +1,10 @@
+{
+  "name": "cliprail",
+  "private": true,
+  "packageManager": "pnpm@10",
+  "scripts": {
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint",
+    "test": "pnpm -r --if-present test"
+  }
+}

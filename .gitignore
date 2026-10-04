@@ -1,0 +1,22 @@
+node_modules/
+.pnpm-store/
+dist/
+.next/
+out/
+cache/
+broadcast/
+coverage/
+.turbo/
+.vercel/
+.wrangler/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+# Envio generated
+indexer/generated/
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/
