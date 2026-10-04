@@ -128,6 +128,8 @@
    lighting the horizon after sunset (afterglow). JS keeps adding to --sky-turn so the wheel never spins backwards, and sets --sky-dur so a multi-phase change is one
    continuous turn (no pause at each phase). */
 .cr-sky { --sky-r: 52rem; --sky-h: 46rem; }
+/* inner-page title banner: smaller wheel with its horizon at the bottom of the band */
+.cr-sky.cr-sky-band { --sky-r: 24rem; --sky-h: 24rem; }
 .cr-wheel {
   position: absolute; left: 50%; top: var(--sky-h); width: 0; height: 0;
   rotate: calc(var(--sky-turn, 35) * 1deg);
@@ -157,6 +159,15 @@
 @media (max-width: 639px) {
   .cr-sky { --sky-r: 20rem; --sky-h: 26rem; }
 }
+
+/* Inner pages sit on a blue sky in day mode, so text placed straight on the sky turns white (like the landing hero).
+   Anything on a card or panel surface gets the normal light-theme text colours back. */
+[data-theme="light"] main:has(> .cr-page-sky) { --color-fg: #ffffff; --color-muted: rgb(255 255 255 / 0.78); color: var(--color-fg); }
+[data-theme="light"] main:has(> .cr-page-sky) :where(.bg-surface, .bg-surface-2, .bg-white, [class*="bg-surface-2/"], [class*="bg-white/9"], [class*="bg-white/8"]) {
+  --color-fg: #121216; --color-muted: #6b6a75; color: var(--color-fg);
+}
+/* the page fades out with its own overlay (PageSky), so the backdrop's built-in bottom fades are off here */
+.cr-sky-band .cr-bottom-fade { display: none; }
 
 /* while the theme animates, let page colours ease too (the sky has its own transitions) */
 .theme-anim :where(body *:not(.cr-sky, .cr-sky *)) {

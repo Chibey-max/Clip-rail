@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/site/PageHeader";
 import { AddressChip } from "@/components/ui/AddressChip";
 import { StatusBadge, TierBadge } from "@/components/ui/Badge";
 import { BudgetMeter } from "@/components/ui/BudgetMeter";
@@ -30,9 +31,9 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function Styleguide() {
   return (
+    <>
+    <PageHeader title="Styleguide" width="max-w-4xl">Every component from docs/design.md, in every state.</PageHeader>
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <h1 className="text-3xl font-bold">Styleguide</h1>
-      <p className="mt-2 text-muted">Every component from docs/design.md, in every state.</p>
 
       <Section title="Colour tokens">
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
@@ -114,5 +115,6 @@ export default function Styleguide() {
         <EmptyState title="No clips yet. Be the first to post one and start earning." />
       </Section>
     </div>
+    </>
   );
 }

@@ -141,10 +141,10 @@ function NightSky() {
 
 const PHOTO = "absolute inset-x-0 top-0 h-[72rem] [mask-image:linear-gradient(to_bottom,black_55%,transparent)]";
 
-export function SkyBackdrop() {
+export function SkyBackdrop({ variant = "full" }: { variant?: "full" | "band" }) {
   // Four skies, crossfaded by <html data-sky>. The sky spans the hero and the sections under it, so it trickles down the page.
   return (
-    <div aria-hidden className="cr-sky pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+    <div aria-hidden className={`cr-sky pointer-events-none absolute inset-0 -z-10 overflow-hidden ${variant === "band" ? "cr-sky-band" : ""}`}>
       {/* ---------- Daylight photo: morning / afternoon / evening are the same photo, graded differently ---------- */}
       <div className="absolute inset-0 opacity-100 transition-opacity duration-[1400ms] sky-night:opacity-0">
         {/* base gradients under and below the photo, one per phase */}
@@ -178,7 +178,7 @@ export function SkyBackdrop() {
         <div className="absolute inset-0 opacity-0 transition-opacity duration-[1400ms] sky-evening:opacity-70">
           <StarField stars={STARS.filter((st) => st.glow).slice(0, 30)} h={H} className="absolute inset-x-0 top-0 h-[64rem] w-full [mask-image:linear-gradient(to_bottom,black,transparent_38%)]" />
         </div>
-        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-bg to-transparent" />
+        <div className="cr-bottom-fade absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-bg to-transparent" />
         <Grain opacity={0.06} />
       </div>
 
@@ -190,7 +190,7 @@ export function SkyBackdrop() {
         <NightSky />
         <StarField stars={TRAIL} h={TRAIL_H} className="absolute inset-x-0 top-[44rem] h-[110rem] w-full [mask-image:linear-gradient(to_bottom,transparent,black_18%,black_70%,transparent)]" />
         <span className="absolute top-[8rem] right-[30%] h-px w-28 animate-shoot bg-gradient-to-r from-white/90 to-transparent [animation-duration:14s]" />
-        <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-bg to-transparent" />
+        <div className="cr-bottom-fade absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-bg to-transparent" />
         <Grain opacity={0.1} />
       </div>
 

@@ -8,7 +8,7 @@ export function ClipsTable({ clips }: { clips: Clip[] }) {
     return <EmptyState title="No clips yet. Be the first to post one and start earning." />;
   }
   return (
-    <div className="overflow-hidden rounded-[var(--radius-card)] border border-line">
+    <div className="overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface">
       {/* Desktop table */}
       <table className="tabular hidden w-full text-sm sm:table">
         <thead className="bg-surface-2 text-left text-xs text-muted">

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
+import { PageSky } from "@/components/site/PageSky";
 import { Providers } from "@/components/Providers";
 import { THEME_SCRIPT } from "@/components/site/ThemeToggle";
 import "./globals.css";
@@ -30,10 +31,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="flex min-h-dvh flex-col">
+      <body className="flex min-h-dvh flex-col" suppressHydrationWarning>
         <Providers>
           <Header />
-          <main className="flex-1">{children}</main>
+          <main className="relative isolate flex-1">
+            <PageSky />
+            {children}
+          </main>
           <Footer />
         </Providers>
       </body>

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { isAddress } from "viem";
+import { PageHeader } from "@/components/site/PageHeader";
 import { AddressChip } from "@/components/ui/AddressChip";
 import { StatusBadge, TierBadge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
@@ -17,16 +18,23 @@ export default async function ProfilePage({ params }: { params: Promise<{ addres
   const days = profile.firstSeen ? Math.max(1, Math.round((NOW - profile.firstSeen) / 86400)) : 0;
 
   return (
+    <>
+    <PageHeader
+      eyebrow={
+        <>
+          <AddressChip address={address} />
+          {days > 0 && <span>clipping for {days} {days === 1 ? "day" : "days"}</span>}
+        </>
+      }
+      title={
+        <span className="flex flex-wrap items-center gap-3">
+          {profile.handle ?? "Clipper"} <TierBadge tier={profile.tier} />
+        </span>
+      }
+      width="max-w-4xl"
+    />
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-3xl font-bold">{profile.handle ?? "Clipper"}</h1>
-        <TierBadge tier={profile.tier} />
-      </div>
-      <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted">
-        <AddressChip address={address} />
-        {days > 0 && <span>clipping for {days} {days === 1 ? "day" : "days"}</span>}
-      </div>
-      <p className="mt-4 max-w-2xl text-sm text-muted">
+      <p className="max-w-2xl text-sm text-muted">
         Every number here comes from paid, verified views on Monad. Nobody can write to this record except the Cliprail escrow when it pays out.
       </p>
 
@@ -41,7 +49,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ addres
       {clips.length === 0 ? (
         <div className="mt-4"><EmptyState title="No clips yet." /></div>
       ) : (
-        <ul className="mt-4 divide-y divide-line overflow-hidden rounded-[var(--radius-card)] border border-line">
+        <ul className="mt-4 divide-y divide-line overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface">
           {clips.map((c) => (
             <li key={c.id} className="flex items-center justify-between gap-3 p-4">
               <div className="min-w-0">
@@ -59,5 +67,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ addres
         {receipts.length === 0 ? <p className="text-sm text-muted">No receipts yet.</p> : <ul>{receipts.map((r) => <ReceiptRow key={r.id} receipt={r} now={NOW} />)}</ul>}
       </Card>
     </div>
+    </>
   );
 }

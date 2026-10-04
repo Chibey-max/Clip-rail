@@ -3,6 +3,7 @@
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { BrandConsole } from "@/components/brand/BrandConsole";
 import { LinkButton } from "@/components/ui/Button";
+import { PageHeader } from "@/components/site/PageHeader";
 import { useAuth } from "@/lib/auth";
 
 function DevSwitch() {
@@ -18,19 +19,12 @@ function DevSwitch() {
 
 export default function BrandPage() {
   return (
+    <>
+    <PageHeader title="Brand console" width="max-w-5xl" actions={<LinkButton href="/brand/new">New campaign</LinkButton>} />
     <div className="mx-auto max-w-5xl px-4 py-10">
       <DevSwitch />
-      <RequireAuth title="Brand console">
-        {(address) => (
-          <>
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-              <h1 className="text-3xl font-bold">Brand console</h1>
-              <LinkButton href="/brand/new">New campaign</LinkButton>
-            </div>
-            <BrandConsole address={address} />
-          </>
-        )}
-      </RequireAuth>
+      <RequireAuth title="Brand console">{(address) => <BrandConsole address={address} />}</RequireAuth>
     </div>
+    </>
   );
 }
