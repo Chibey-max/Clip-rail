@@ -1,0 +1,36 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { claimCode, descriptionHasCode, parseVideoId } from "./index.ts";
+
+test("parseVideoId handles every link shape", () => {
+  const id = "Ab3dEf6hIj9";
+  for (const s of [
+    id,
+    `https://youtube.com/shorts/${id}`,
+    `https://www.youtube.com/shorts/${id}?feature=share`,
+    `youtube.com/shorts/${id}`,
+    `https://youtu.be/${id}`,
+    `https://m.youtube.com/watch?v=${id}&t=3`,
+    `https://www.youtube.com/embed/${id}`,
+  ]) {
+    assert.equal(parseVideoId(s), id, s);
+  }
+});
+
+test("parseVideoId rejects junk", () => {
+  for (const s of ["", "hello", "https://vimeo.com/123", "https://youtube.com/shorts/tooShort", "https://youtube.com/watch?v=bad!id12345"]) {
+    assert.equal(parseVideoId(s), null, s);
+  }
+});
+
+test("claimCode format and determinism", () => {
+  const a = claimCode(1n, "0x4f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6");
+  assert.match(a, /^CR-[0-9A-F]{8}$/);
+  assert.equal(a, claimCode(1, "0x4f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6"));
+  assert.notEqual(a, claimCode(2n, "0x4f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6"));
+});
+
+test("descriptionHasCode is case-insensitive", () => {
+  assert.ok(descriptionHasCode("great clip! cr-3fa9b21c #shorts", "CR-3FA9B21C"));
+  assert.ok(!descriptionHasCode("no code here", "CR-3FA9B21C"));
+});
