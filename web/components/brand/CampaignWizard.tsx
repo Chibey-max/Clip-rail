@@ -167,7 +167,7 @@ export function CampaignWizard() {
               <Field label="Budget" htmlFor="budget" error={errors.budget}>
                 <AffixInput id="budget" prefix="$" suffix="USDC" inputMode="decimal" value={form.budget} onChange={(e) => set("budget", e.target.value)} invalid={!!errors.budget} />
               </Field>
-              <Field label="Rate" htmlFor="cpm" error={errors.cpm}>
+              <Field label="Rate" htmlFor="cpm" error={errors.cpm} hint={calc.cpm > 0 ? `= ${usd(calc.cpm * 1000, { cents: false })} per 1M views` : undefined}>
                 <AffixInput id="cpm" prefix="$" suffix="/ 1k views" inputMode="decimal" value={form.cpm} onChange={(e) => set("cpm", e.target.value)} invalid={!!errors.cpm} />
               </Field>
               <Field label="Max per clip" htmlFor="maxPerClip" error={errors.maxPerClip}>

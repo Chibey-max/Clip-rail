@@ -7,6 +7,7 @@ import "./globals.css";
 
 // Fonts are bundled (SIL OFL, from Fontsource) so dev and builds never download from Google at runtime.
 const inter = localFont({ src: "./fonts/Inter.woff2", variable: "--font-inter", weight: "100 900", display: "swap" });
+const display = localFont({ src: "./fonts/SpaceGrotesk.woff2", variable: "--font-display-face", weight: "300 700", display: "swap" });
 const mono = localFont({ src: "./fonts/JetBrainsMono.woff2", variable: "--font-mono-face", weight: "100 800", display: "swap" });
 
 export const metadata: Metadata = {
@@ -15,11 +16,11 @@ export const metadata: Metadata = {
     "Brands fund clipping campaigns in escrow on Monad. Clippers are paid in USDC per verified YouTube Shorts view.",
 };
 
-export const viewport: Viewport = { themeColor: "#0b0a10" };
+export const viewport: Viewport = { themeColor: "#f6f6f2" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${mono.variable}`}>
+    <html lang="en" className={`${inter.variable} ${display.variable} ${mono.variable}`}>
       <body className="flex min-h-dvh flex-col">
         <Providers>
           <Header />

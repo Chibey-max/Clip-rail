@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Variant = "primary" | "ink" | "secondary" | "ghost" | "danger";
 
 const base =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] px-4 text-sm font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-accent text-accent-fg hover:bg-accent-hover",
-  secondary: "border border-line bg-surface-2 text-fg hover:border-muted",
+  primary: "bg-accent text-accent-fg shadow-[0_6px_16px_-6px_rgb(110_84_255/0.6)] hover:bg-accent-hover",
+  ink: "bg-ink text-white hover:bg-black",
+  secondary: "border border-line bg-surface text-fg shadow-[var(--shadow-soft)] hover:border-muted/50",
   ghost: "text-muted hover:bg-surface-2 hover:text-fg",
-  danger: "bg-danger/15 text-danger hover:bg-danger/25",
+  danger: "bg-danger/10 text-danger hover:bg-danger/15",
 };
 
 function Spinner() {
