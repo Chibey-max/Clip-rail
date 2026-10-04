@@ -160,3 +160,14 @@ export function getCampaign(id: string) {
 export function clipsForCampaign(id: string) {
   return clips.filter((c) => c.campaignId === id);
 }
+
+/** Extra receipts so every active clip has history (used by /me, /u/[address]). */
+receipts.push(
+  { id: "r4", clipId: "12", campaignId: "1", clipper: clippers[1][1], round: 371, totalViews: 15_900, deltaViews: 15_900, likes: 980, amount: 15_900_000, unlockAt: NOW - 8 * H, timestamp: NOW - 32 * H, txHash: "0x3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091a2b", released: true },
+  { id: "r5", clipId: "15", campaignId: "1", clipper: clippers[4][1], round: 405, totalViews: 12_330, deltaViews: 6_330, likes: 640, amount: 6_330_000, unlockAt: NOW + 10 * H, timestamp: NOW - 14 * H, txHash: "0x4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c", released: false },
+  { id: "r6", clipId: "15", campaignId: "1", clipper: clippers[4][1], round: 388, totalViews: 6_000, deltaViews: 6_000, likes: 300, amount: 6_000_000, unlockAt: NOW - 2 * H, timestamp: NOW - 26 * H, txHash: "0x5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d", released: true },
+);
+
+/** Who the mock "signed in" user is in dev, until David's real auth lands. */
+export const MOCK_CLIPPER = clippers[0][1];
+export const MOCK_BRAND = campaigns[0].brand;

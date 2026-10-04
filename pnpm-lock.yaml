@@ -8,6 +8,8 @@ importers:
 
   .: {}
 
+  packages/abi: {}
+
   packages/shared:
     dependencies:
       viem:
@@ -23,6 +25,9 @@ importers:
 
   web:
     dependencies:
+      '@cliprail/abi':
+        specifier: workspace:*
+        version: link:../packages/abi
       '@cliprail/shared':
         specifier: workspace:*
         version: link:../packages/shared

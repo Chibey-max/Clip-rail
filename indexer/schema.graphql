@@ -1,0 +1,120 @@
+# Cliprail indexer schema (playbook P-2.4). Mirrors web/lib/types.ts.
+# Token amounts are USDC units (6 decimals) as BigInt; times are unix seconds.
+# Handlers (src/EventHandlers.ts) and config.yaml are written once Isaac's ABI v0 lands (H3),
+# using `pnpx envio init` → Contract Import → Local ABI, chain 10143 (+143 for production, P-7.1).
+
+enum CampaignStatus {
+  Active
+  Closed
+}
+
+enum ClipStatus {
+  Pending
+  Active
+  Flagged
+  Rejected
+  Ended
+}
+
+type Campaign {
+  id: ID! # campaignId
+  brand: String! @index
+  token: String!
+  budget: BigInt!
+  reserved: BigInt!
+  paid: BigInt!
+  cpm: BigInt!
+  maxPerClip: BigInt!
+  maxViewsPerReport: BigInt!
+  minLikeBps: Int!
+  holdSecs: Int!
+  startsAt: Int!
+  endsAt: Int!
+  minTier: Int!
+  briefHash: String!
+  status: CampaignStatus!
+  clipsCount: Int!
+  verifiedViews: BigInt!
+  createdAt: Int!
+  clips: [Clip!]! @derivedFrom(field: "campaign")
+}
+
+type Clip {
+  id: ID! # clipId
+  campaign: Campaign!
+  clipper: Clipper!
+  videoId: String! @index
+  status: ClipStatus!
+  lastViews: BigInt!
+  likes: BigInt!
+  accrued: BigInt!
+  released: BigInt!
+  registeredAt: Int!
+  flaggedAt: Int
+  receipts: [Receipt!]! @derivedFrom(field: "clip")
+}
+
+type Clipper {
+  id: ID! # address (lowercase)
+  paidViews: BigInt!
+  earned: BigInt!
+  clipsPaid: Int!
+  rejections: Int!
+  brands: Int!
+  tier: Int!
+  firstSeen: Int!
+  clips: [Clip!]! @derivedFrom(field: "clipper")
+}
+
+# One ViewsVerified event = one VerifiedView receipt.
+type Receipt {
+  id: ID! # txHash-logIndex
+  clip: Clip!
+  campaign: Campaign!
+  clipper: Clipper!
+  round: BigInt!
+  totalViews: BigInt!
+  deltaViews: BigInt!
+  likes: BigInt!
+  amount: BigInt!
+  unlockAt: Int!
+  timestamp: Int!
+  txHash: String!
+}
+
+type Payout {
+  id: ID! # txHash-logIndex
+  clip: Clip!
+  clipper: Clipper!
+  amount: BigInt!
+  timestamp: Int!
+  txHash: String!
+}
+
+type Flag {
+  id: ID! # clipId
+  clip: Clip!
+  brand: String!
+  reasonHash: String!
+  deadline: Int!
+  resolved: Boolean!
+  rejected: Boolean
+  returned: BigInt
+}
+
+# Singleton "global" row for landing-page totals.
+type Totals {
+  id: ID!
+  campaigns: Int!
+  clippers: Int!
+  verifiedViews: BigInt!
+  paid: BigInt!
+  payouts: Int!
+}
+
+type DailyStat {
+  id: ID! # YYYY-MM-DD
+  views: BigInt!
+  paid: BigInt!
+  receipts: Int!
+}

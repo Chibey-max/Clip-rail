@@ -1,10 +1,12 @@
 import { CampaignCard } from "@/components/site/CampaignCard";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { campaigns, NOW } from "@/mocks/data";
+import { getCampaigns, now } from "@/lib/data";
 
 export const metadata = { title: "Campaigns · Cliprail" };
 
-export default function CampaignsPage() {
+export default async function CampaignsPage() {
+  const campaigns = await getCampaigns();
+  const NOW = now();
   const active = campaigns.filter((c) => c.status === "Active");
   const closed = campaigns.filter((c) => c.status === "Closed");
   return (

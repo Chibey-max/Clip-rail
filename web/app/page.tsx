@@ -3,7 +3,7 @@ import { CampaignCard } from "@/components/site/CampaignCard";
 import { LinkButton } from "@/components/ui/Button";
 import { Counter } from "@/components/ui/Counter";
 import { StatTile } from "@/components/ui/StatTile";
-import { campaigns, NOW, totals } from "@/mocks/data";
+import { getCampaigns, getTotals, now } from "@/lib/data";
 
 const steps = [
   { n: "1", title: "Sign up with your face or fingerprint", body: "No app to install, no seed phrase. Your account is a passkey on your phone." },
@@ -11,7 +11,9 @@ const steps = [
   { n: "3", title: "Get paid per verified view", body: "Chainlink verifies your real views. After a short fraud hold, USDC lands in your account automatically." },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const [campaigns, totals] = await Promise.all([getCampaigns(), getTotals()]);
+  const NOW = now();
   const live = campaigns.filter((c) => c.status === "Active").slice(0, 3);
   return (
     <>
