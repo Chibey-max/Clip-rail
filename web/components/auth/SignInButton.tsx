@@ -9,7 +9,7 @@ import { shortAddress } from "@/lib/format";
 
 /** Header auth control (P-1.5). Signed out: opens the passkey modal. Signed in: account menu. */
 export function SignInButton() {
-  const { address, status, signIn, signUp, signOut } = useAuth();
+  const { address, status, error, signIn, signUp, signOut } = useAuth();
   const [open, setOpen] = useState(false);
   const [handle, setHandle] = useState("");
 
@@ -48,8 +48,7 @@ export function SignInButton() {
             className="mt-5 w-full"
             loading={status === "signing-in"}
             onClick={async () => {
-              await signIn();
-              setOpen(false);
+              if (await signIn()) setOpen(false);
             }}
           >
             I already have an account
@@ -60,8 +59,7 @@ export function SignInButton() {
           <form
             onSubmit={async (e) => {
               e.preventDefault();
-              await signUp(handle.trim() || "clipper");
-              setOpen(false);
+              if (await signUp(handle.trim() || "clipper")) setOpen(false);
             }}
             className="flex flex-col gap-3"
           >
@@ -75,6 +73,11 @@ export function SignInButton() {
             />
             <Button type="submit" variant="secondary" loading={status === "signing-in"}>Create account with passkey</Button>
           </form>
+          {error && (
+            <p role="alert" className="mt-4 text-sm text-danger">
+              {error}
+            </p>
+          )}
           <p className="mt-4 text-xs text-muted">Works best on iPhone Safari, or Chrome with Google Password Manager.</p>
           <Dialog.Close className="absolute top-4 right-4 rounded-md px-2 text-muted hover:text-fg" aria-label="Close">✕</Dialog.Close>
         </Dialog.Content>
