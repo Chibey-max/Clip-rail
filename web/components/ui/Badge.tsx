@@ -14,7 +14,7 @@ const tone: Record<Status, string> = {
 
 export function StatusBadge({ status }: { status: Status }) {
   return (
-    <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold", tone[status])}>
+    <span data-badge className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold", tone[status])}>
       <span aria-hidden className="size-1.5 rounded-full bg-current" />
       {status}
     </span>
@@ -26,6 +26,7 @@ const tierLabel: Record<Tier, string> = { 0: "New", 1: "Tier 1", 2: "Tier 2" };
 export function TierBadge({ tier }: { tier: Tier }) {
   return (
     <span
+      data-badge
       className={cn(
         "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold",
         tier === 0 && "border-line text-muted",

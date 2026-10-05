@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { PageHeader } from "@/components/site/PageHeader";
 import { ClipsTable } from "@/components/site/ClipsTable";
 import { AddressChip } from "@/components/ui/AddressChip";
 import { StatusBadge, TierBadge } from "@/components/ui/Badge";
@@ -29,15 +30,20 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
   ];
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1fr_22rem] lg:grid-rows-[auto_1fr]">
-      <div className="min-w-0 lg:col-start-1 lg:row-start-1">
-        <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
+    <>
+    <PageHeader
+      eyebrow={
+        <>
           <span>{c.brandName}</span>
           <AddressChip address={c.brand} />
           <StatusBadge status={c.status} />
-        </div>
-        <h1 className="mt-3 text-3xl font-bold sm:text-4xl">{c.title}</h1>
-        <p className="mt-4 text-muted">{c.brief}</p>
+        </>
+      }
+      title={c.title}
+    />
+    <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1fr_22rem] lg:grid-rows-[auto_1fr]">
+      <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+        <p className="text-muted">{c.brief}</p>
 
         <div className="mt-6 aspect-video overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface">
           {YT_ID.test(c.sourceVideoId) ? (
@@ -104,5 +110,6 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
       </div>
 
     </div>
+    </>
   );
 }

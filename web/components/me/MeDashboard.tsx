@@ -72,7 +72,7 @@ export function MeDashboard({ address }: { address: Address }) {
             <EmptyState title="No clips yet. Pick a campaign, post a Short and start earning." action={<LinkButton href="/campaigns">Browse campaigns</LinkButton>} />
           </div>
         ) : (
-          <ul className="mt-4 divide-y divide-line overflow-hidden rounded-[var(--radius-card)] border border-line">
+          <ul className="mt-4 divide-y divide-line overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface">
             {clips.map((c) => (
               <li key={c.id} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@/components/site/PageHeader";
 import { TierBadge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getCampaigns, getLeaderboard } from "@/lib/data";
@@ -10,14 +11,14 @@ export default async function LeaderboardPage() {
   const [clippers, campaigns] = await Promise.all([getLeaderboard(20), getCampaigns()]);
   const topCampaigns = [...campaigns].sort((a, b) => b.verifiedViews - a.verifiedViews).slice(0, 5);
   return (
+    <>
+    <PageHeader title="Leaderboard">Ranked by paid, verified views. Bot views and rejected clips don&apos;t count.</PageHeader>
     <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 lg:grid-cols-[1fr_20rem]">
       <section>
-        <h1 className="text-3xl font-bold">Leaderboard</h1>
-        <p className="mt-2 text-muted">Ranked by paid, verified views. Bot views and rejected clips don&apos;t count.</p>
         {clippers.length === 0 ? (
-          <div className="mt-6"><EmptyState title="No paid clippers yet. The first payout puts you at the top." /></div>
+          <div><EmptyState title="No paid clippers yet. The first payout puts you at the top." /></div>
         ) : (
-          <ol className="mt-6 divide-y divide-line overflow-hidden rounded-[var(--radius-card)] border border-line">
+          <ol className="divide-y divide-line overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface">
             {clippers.map((c, i) => (
               <li key={c.id}>
                 <Link href={`/u/${c.id}`} className="flex items-center gap-4 p-4 hover:bg-surface-2/60">
@@ -54,5 +55,6 @@ export default async function LeaderboardPage() {
         </ol>
       </aside>
     </div>
+    </>
   );
 }
