@@ -1,0 +1,99 @@
+# CI for every pull request and every push to main. Make the jobs required checks in
+# Settings → Branches → main so nothing merges red.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secrets:
+    name: no secrets committed
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: No env files tracked
+        run: |
+          bad=$(git ls-files | grep -E '(^|/)\.env($|\.)' | grep -v '\.env\.example$' || true)
+          if [ -n "$bad" ]; then echo "::error::Env files must not be committed:"; echo "$bad"; exit 1; fi
+      - name: No API keys or private keys in tracked files
+        run: |
+          # Google API keys, PEM private keys, and 64-hex values assigned to *_PK / *PRIVATE_KEY.
+          hits=$(git grep -nIE 'AIza[0-9A-Za-z_-]{35}|-----BEGIN [A-Z ]*PRIVATE KEY-----|(_PK|PRIVATE_KEY)[[:space:]]*[=:][[:space:]]*"?(0x)?[0-9a-fA-F]{64}' -- . ':!pnpm-lock.yaml' || true)
+          if [ -n "$hits" ]; then echo "::error::Possible secret committed:"; echo "$hits" | cut -c1-120; exit 1; fi
+
+  js:
+    name: typecheck, lint, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - name: Build web
+        run: pnpm --filter @cliprail/web build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+
+  oracle:
+    name: CRE oracle compiles to WASM
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: oven-sh/setup-bun@v2
+      - run: pnpm install --frozen-lockfile --filter "@cliprail/cre-oracle..."
+      # Same compiler the CRE CLI uses; it also rejects APIs the workflow runtime doesn't have.
+      - name: Compile workflow
+        working-directory: cre/oracle
+        run: bun x cre-compile main.ts "$RUNNER_TEMP/oracle.wasm"
+
+  contracts:
+    name: forge build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Check for a Foundry project
+        id: foundry
+        run: echo "present=$([ -f contracts/foundry.toml ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - uses: foundry-rs/foundry-toolchain@v1
+        if: steps.foundry.outputs.present == 'true'
+      - name: forge build
+        if: steps.foundry.outputs.present == 'true'
+        working-directory: contracts
+        run: forge build --sizes
+      - name: forge test
+        if: steps.foundry.outputs.present == 'true'
+        working-directory: contracts
+        run: forge test -vvv
+      - name: Skip (no contracts yet)
+        if: steps.foundry.outputs.present != 'true'
+        run: echo "contracts/foundry.toml not found; skipping until the Foundry project lands."
