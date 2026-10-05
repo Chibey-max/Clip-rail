@@ -2338,7 +2338,7 @@ export const creatorReputationAbi = [
   }
 ] as const;
 
-export const mockUSDCAbi = [
+export const mockUsdcAbi = [
   {
     "type": "constructor",
     "inputs": [],
