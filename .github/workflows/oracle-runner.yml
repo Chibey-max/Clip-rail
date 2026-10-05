@@ -1,0 +1,79 @@
+# Oracle runner (playbook D-3.2): the CRE simulator with --broadcast on a schedule, until CRE deploy
+# access is approved. Reports go through Chainlink's MockKeystoneForwarder, paid by the oracle key.
+# Turn a network on with the repo variable ORACLE_TESTNET_ENABLED / ORACLE_MAINNET_ENABLED = "true".
+name: oracle-runner
+
+on:
+  schedule:
+    - cron: "*/5 * * * *" # GitHub may start scheduled runs late; that only delays a report.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    strategy:
+      fail-fast: false
+      matrix:
+        net: [testnet, mainnet]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Never let two runs for one network overlap: both would read the same lastRound.
+    concurrency:
+      group: oracle-${{ matrix.net }}
+      cancel-in-progress: false
+    env:
+      ENABLED: ${{ matrix.net == 'testnet' && vars.ORACLE_TESTNET_ENABLED || vars.ORACLE_MAINNET_ENABLED }}
+      CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
+    steps:
+      - name: Skip if this network is off
+        if: env.ENABLED != 'true'
+        run: echo "Oracle for ${{ matrix.net }} is disabled (set vars.ORACLE_${{ matrix.net == 'testnet' && 'TESTNET' || 'MAINNET' }}_ENABLED=true)."
+
+      - uses: actions/checkout@v4
+        if: env.ENABLED == 'true'
+
+      - uses: pnpm/action-setup@v4
+        if: env.ENABLED == 'true'
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        if: env.ENABLED == 'true'
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: oven-sh/setup-bun@v2
+        if: env.ENABLED == 'true'
+
+      - name: Install CRE CLI
+        if: env.ENABLED == 'true'
+        run: |
+          curl -sSL https://app.chain.link/install.sh | bash
+          echo "$HOME/.cre/bin" >> "$GITHUB_PATH"
+
+      - name: Install workflow dependencies
+        if: env.ENABLED == 'true'
+        run: pnpm install --frozen-lockfile --filter "@cliprail/cre-oracle..."
+
+      - name: Write cre/.env from secrets
+        if: env.ENABLED == 'true'
+        run: |
+          umask 077
+          {
+            echo "CRE_ETH_PRIVATE_KEY=${{ secrets.CRE_ETH_PRIVATE_KEY }}"
+            echo "YT_API_KEY_ORACLE=${{ secrets.YT_API_KEY_ORACLE }}"
+            echo "MONAD_TESTNET_RPC=${{ secrets.MONAD_TESTNET_RPC || 'https://testnet-rpc.monad.xyz' }}"
+            echo "MONAD_MAINNET_RPC=${{ secrets.MONAD_MAINNET_RPC || 'https://rpc.monad.xyz' }}"
+          } > cre/.env
+
+      - name: Simulate and broadcast one report
+        if: env.ENABLED == 'true'
+        working-directory: cre
+        run: cre workflow simulate oracle --target ${{ matrix.net }} --broadcast --non-interactive --trigger-index 0
+
+      - name: Remove secrets
+        if: always() && env.ENABLED == 'true'
+        run: rm -f cre/.env
