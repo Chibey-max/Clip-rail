@@ -5,8 +5,19 @@
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
-  "exports": { ".": "./src/index.ts" },
-  "scripts": { "typecheck": "tsc --noEmit", "test": "node --experimental-strip-types --test src/*.test.ts" },
-  "dependencies": { "viem": "^2" },
-  "devDependencies": { "typescript": "^5", "@types/node": "^22" }
+  "exports": {
+    ".": "./src/index.ts",
+    "./claim": "./src/claim.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test src/*.test.ts"
+  },
+  "dependencies": {
+    "viem": "^2"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^22"
+  }
 }

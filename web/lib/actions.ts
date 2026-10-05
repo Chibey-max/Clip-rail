@@ -1,11 +1,21 @@
 "use client";
 
 /**
- * Transaction hooks (playbook D-3.3, D-5.1, D-5.2). MOCK implementations with the final interface:
- * each returns { run, status, txHash, error }. David swaps the body of `mockSend` calls for real
- * viem + Mera transactions / relayer calls; pages stay the same.
+ * Transaction hooks (playbook D-3.3, D-5.1, D-5.2). Each returns { run, status, txHash, error, reset }.
+ *
+ * Real: useCreateCampaign, useRegisterClip, useSendOut, useSetPayout (D-3.3).
+ * Still mock (later tasks): useFlag, useResolve, useTopUp, useClose (D-5.1), useSandboxFund (D-6.3).
+ * Every hook falls back to the mock under NEXT_PUBLIC_MOCK_AUTH so screen work needs no chain.
  */
 import { useCallback, useState } from "react";
+import { encodeFunctionData, toHex, type Hex, type LocalAccount } from "viem";
+import { cliprailDomain, registerClipTypes, setPayoutTypes, transferWithAuthorizationTypes } from "@cliprail/shared";
+import { erc20Abi, vaultAbi } from "@/lib/abi";
+import { useAuth } from "@/lib/auth";
+import { chain, publicClient } from "@/lib/chains";
+import { ADDR, NETWORK, USDC } from "@/lib/network";
+import { postRelay } from "@/lib/relay";
+import { sendTx, txErrorMessage } from "@/lib/tx";
 import type { Address } from "@/lib/types";
 
 export type TxStatus = "idle" | "signing" | "pending" | "success" | "error";
@@ -24,35 +34,61 @@ export interface CampaignParams {
   briefHash: `0x${string}`;
 }
 
+/** Signed messages expire after 15 minutes. */
+const SIG_TTL_SECS = 15 * 60;
+
+interface TxCtx {
+  account: LocalAccount;
+  address: Address;
+  /** Call once the user has signed and the transaction is on its way. */
+  pending: () => void;
+}
+
+type Exec<A extends unknown[]> = (ctx: TxCtx, ...args: A) => Promise<Hex>;
+
 function fakeHash(): `0x${string}` {
   const hex = Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
   return `0x${hex}`;
 }
 
-function useTx<A extends unknown[]>() {
+const fakeExec: Exec<unknown[]> = async ({ pending }) => {
+  await new Promise((r) => setTimeout(r, 700));
+  pending();
+  await new Promise((r) => setTimeout(r, 900));
+  return fakeHash();
+};
+
+function useTx<A extends unknown[]>(exec?: Exec<A>) {
+  const { getAccount, address, isMock } = useAuth();
   const [status, setStatus] = useState<TxStatus>("idle");
   const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const run = useCallback(async (..._args: A) => {
-    void _args;
-    setError(null);
-    setTxHash(null);
-    try {
+  const run = useCallback(
+    async (...args: A) => {
+      setError(null);
+      setTxHash(null);
       setStatus("signing");
-      await new Promise((r) => setTimeout(r, 700));
-      setStatus("pending");
-      await new Promise((r) => setTimeout(r, 900));
-      const hash = fakeHash();
-      setTxHash(hash);
-      setStatus("success");
-      return hash;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
-      setStatus("error");
-      return null;
-    }
-  }, []);
+      try {
+        const pending = () => setStatus("pending");
+        let hash: Hex;
+        if (isMock || !exec) {
+          hash = await fakeExec({ pending } as TxCtx, ...args);
+        } else {
+          if (!address) throw new Error("Sign in first.");
+          hash = await exec({ account: await getAccount(), address, pending }, ...args);
+        }
+        setTxHash(hash);
+        setStatus("success");
+        return hash;
+      } catch (e) {
+        setError(txErrorMessage(e));
+        setStatus("error");
+        return null;
+      }
+    },
+    [exec, isMock, address, getAccount],
+  );
 
   const reset = useCallback(() => {
     setStatus("idle");
@@ -63,14 +99,133 @@ function useTx<A extends unknown[]>() {
   return { run, status, txHash, error, reset };
 }
 
-/** approve + createCampaign (or createCampaignWithPermit). */
-export const useCreateCampaign = () => useTx<[CampaignParams]>();
-/** sign RegisterClip typed data → POST /relay/register. Gasless for the clipper. */
-export const useRegisterClip = () => useTx<[campaignId: string, videoId: string]>();
-/** sign TransferWithAuthorization → POST /relay/transfer. Gasless send-out. */
-export const useSendOut = () => useTx<[to: Address, amountUnits: bigint]>();
+function vaultAddress(): Address {
+  if (!ADDR.vault) throw new Error(`Cliprail isn't deployed on ${NETWORK} yet.`);
+  return ADDR.vault;
+}
+
+const deadline = () => BigInt(Math.floor(Date.now() / 1000) + SIG_TTL_SECS);
+
+async function waitFor(hash: Hex) {
+  const receipt = await publicClient().waitForTransactionReceipt({ hash });
+  if (receipt.status !== "success") throw new Error("The transaction failed on chain.");
+  return hash;
+}
+
+async function readNonce(clipper: Address) {
+  return publicClient().readContract({ address: vaultAddress(), abi: vaultAbi, functionName: "nonces", args: [clipper] });
+}
+
+// ---------- D-3.3 ----------
+
+/** approve (only if the allowance is short) → createCampaign. The brand pays gas in MON. */
+const createCampaign: Exec<[CampaignParams]> = async ({ account, address, pending }, p) => {
+  const vault = vaultAddress();
+  const allowance = await publicClient().readContract({
+    address: p.token,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: [address, vault],
+  });
+  pending();
+  if (allowance < p.budget) {
+    await sendTx(account, {
+      to: p.token,
+      data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [vault, p.budget] }),
+    });
+  }
+  return sendTx(account, {
+    to: vault,
+    data: encodeFunctionData({
+      abi: vaultAbi,
+      functionName: "createCampaign",
+      args: [{ ...p, startsAt: BigInt(p.startsAt), endsAt: BigInt(p.endsAt) }],
+    }),
+  });
+};
+
+/** read nonce → sign RegisterClip → POST /relay/register → wait. Gasless for the clipper. */
+const registerClip: Exec<[campaignId: string, videoId: string]> = async ({ account, address, pending }, campaignId, videoId) => {
+  const vault = vaultAddress();
+  const message = { campaignId: BigInt(campaignId), videoId, clipper: address, nonce: await readNonce(address), deadline: deadline() };
+  const sig = await account.signTypedData({
+    domain: cliprailDomain(chain.id, vault),
+    types: registerClipTypes,
+    primaryType: "RegisterClip",
+    message,
+  });
+  pending();
+  const hash = await postRelay("/relay/register", {
+    campaignId: message.campaignId.toString(),
+    videoId,
+    clipper: address,
+    deadline: message.deadline.toString(),
+    sig,
+  });
+  return waitFor(hash);
+};
+
+/** sign USDC TransferWithAuthorization (EIP-3009) → POST /relay/transfer. Works from a 0-MON account. */
+const sendOut: Exec<[to: Address, amountUnits: bigint]> = async ({ account, address, pending }, to, value) => {
+  const client = publicClient();
+  const [name, version] = await Promise.all([
+    client.readContract({ address: USDC, abi: erc20Abi, functionName: "name" }),
+    client.readContract({ address: USDC, abi: erc20Abi, functionName: "version" }),
+  ]);
+  const message = {
+    from: address,
+    to,
+    value,
+    validAfter: 0n,
+    validBefore: deadline(),
+    nonce: toHex(crypto.getRandomValues(new Uint8Array(32))),
+  };
+  const sig = await account.signTypedData({
+    domain: { name, version, chainId: chain.id, verifyingContract: USDC },
+    types: transferWithAuthorizationTypes,
+    primaryType: "TransferWithAuthorization",
+    message,
+  });
+  pending();
+  const hash = await postRelay("/relay/transfer", {
+    from: address,
+    to,
+    value: value.toString(),
+    validAfter: "0",
+    validBefore: message.validBefore.toString(),
+    nonce: message.nonce,
+    sig,
+  });
+  return waitFor(hash);
+};
+
 /** sign SetPayout → POST /relay/payout-address. */
-export const useSetPayout = () => useTx<[payout: Address]>();
+const setPayout: Exec<[payout: Address]> = async ({ account, address, pending }, payout) => {
+  const vault = vaultAddress();
+  const message = { clipper: address, payout, nonce: await readNonce(address), deadline: deadline() };
+  const sig = await account.signTypedData({
+    domain: cliprailDomain(chain.id, vault),
+    types: setPayoutTypes,
+    primaryType: "SetPayout",
+    message,
+  });
+  pending();
+  const hash = await postRelay("/relay/payout-address", {
+    clipper: address,
+    payout,
+    deadline: message.deadline.toString(),
+    sig,
+  });
+  return waitFor(hash);
+};
+
+export const useCreateCampaign = () => useTx(createCampaign);
+export const useRegisterClip = () => useTx(registerClip);
+export const useSendOut = () => useTx(sendOut);
+export const useSetPayout = () => useTx(setPayout);
+
+// ---------- still mock ----------
+
 export const useFlag = () => useTx<[clipId: string, reason: string]>();
 export const useResolve = () => useTx<[clipId: string, reject: boolean]>();
 export const useTopUp = () => useTx<[campaignId: string, amountUnits: bigint]>();

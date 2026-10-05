@@ -1,0 +1,29 @@
+{
+  "_note": "Shape of a YouTube Data API v3 videos.list response trimmed by YT_FIELDS. Descriptions use {{CODE}} for the clipper's claim code; the test fills it in. Replace with a real saved response once the oracle key exists (D-0.1).",
+  "items": [
+    {
+      "id": "aaaaaaaaaaa",
+      "snippet": { "publishedAt": "2026-10-04T12:00:00Z", "description": "Best moment from the stream 🔥 {{CODE}} #shorts" },
+      "statistics": { "viewCount": "12345", "likeCount": "678" },
+      "status": { "privacyStatus": "public", "uploadStatus": "processed" }
+    },
+    {
+      "id": "bbbbbbbbbbb",
+      "snippet": { "publishedAt": "2026-10-04T13:30:00Z", "description": "no code in this one" },
+      "statistics": { "viewCount": "999" },
+      "status": { "privacyStatus": "public", "uploadStatus": "processed" }
+    },
+    {
+      "id": "ccccccccccc",
+      "snippet": { "publishedAt": "2026-10-03T09:00:00Z", "description": "{{CODE}}" },
+      "statistics": { "viewCount": "5000", "likeCount": "250" },
+      "status": { "privacyStatus": "public", "uploadStatus": "processed" }
+    },
+    {
+      "id": "ddddddddddd",
+      "snippet": { "publishedAt": "2026-10-03T09:00:00Z", "description": "{{CODE}}" },
+      "statistics": { "viewCount": "800", "likeCount": "40" },
+      "status": { "privacyStatus": "private", "uploadStatus": "processed" }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+# CRE workflow settings. Targets match project.yaml: `cre workflow simulate oracle --target testnet`.
+testnet:
+  user-workflow:
+    workflow-name: "cliprail-oracle-testnet"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.testnet.json"
+    secrets-path: "../secrets.yaml"
+
+mainnet:
+  user-workflow:
+    workflow-name: "cliprail-oracle-mainnet"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.mainnet.json"
+    secrets-path: "../secrets.yaml"

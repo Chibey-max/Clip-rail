@@ -1,5 +1,3 @@
-import { encodePacked, keccak256 } from "viem";
-
 /** A YouTube video id: exactly 11 characters of [A-Za-z0-9_-]. Matches the vault's on-chain check. */
 export const YT_ID = /^[A-Za-z0-9_-]{11}$/;
 
@@ -28,24 +26,16 @@ export function parseVideoId(input: string): string | null {
   return id && YT_ID.test(id) ? id : null;
 }
 
-/**
- * Claim code a clipper puts in the Short's description to prove ownership.
- * "CR-" + first 8 hex chars (upper case) of keccak256(abi.encodePacked(uint256 campaignId, address clipper)).
- * Must stay identical to CampaignVault.claimCode() and the CRE workflow.
- */
-export function claimCode(campaignId: bigint | number | string, clipper: `0x${string}`): string {
-  const hash = keccak256(encodePacked(["uint256", "address"], [BigInt(campaignId), clipper]));
-  return `CR-${hash.slice(2, 10).toUpperCase()}`;
-}
-
-/** Case-insensitive check that a description contains the claim code. */
-export function descriptionHasCode(description: string, code: string): boolean {
-  return description.toUpperCase().includes(code.toUpperCase());
-}
+export { claimCode, descriptionHasCode, FLAG_OWNERSHIP_OK, FLAG_UNAVAILABLE } from "./claim.ts";
 
 /** EIP-712 types frozen in PRD §5.4 and playbook §C. */
 export const EIP712_DOMAIN_NAME = "Cliprail";
 export const EIP712_DOMAIN_VERSION = "1";
+
+/** EIP-712 domain for vault signatures (RegisterClip, SetPayout). Web signs it; ops verifies it. */
+export function cliprailDomain(chainId: number, vault: `0x${string}`) {
+  return { name: EIP712_DOMAIN_NAME, version: EIP712_DOMAIN_VERSION, chainId, verifyingContract: vault } as const;
+}
 
 export const registerClipTypes = {
   RegisterClip: [
@@ -77,9 +67,5 @@ export const transferWithAuthorizationTypes = {
     { name: "nonce", type: "bytes32" },
   ],
 } as const;
-
-/** Report flags (PRD §5.2). */
-export const FLAG_OWNERSHIP_OK = 1;
-export const FLAG_UNAVAILABLE = 2;
 
 export const USDC_DECIMALS = 6;
