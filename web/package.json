@@ -10,16 +10,21 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@category-labs/mera": "0.2.0",
+    "@cliprail/abi": "workspace:*",
+    "@cliprail/shared": "workspace:*",
     "@radix-ui/react-dialog": "^1",
     "@radix-ui/react-tooltip": "^1",
+    "@scure/bip32": "^2.4.0",
+    "@scure/bip39": "^2.4.0",
+    "@tanstack/react-query": "^5.104.1",
     "clsx": "^2",
     "motion": "^12",
     "next": "16.3.6",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "@cliprail/shared": "workspace:*",
     "viem": "^2",
-    "@cliprail/abi": "workspace:*"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

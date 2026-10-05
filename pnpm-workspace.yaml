@@ -2,5 +2,7 @@ packages:
   - "web"
   - "ops"
   - "indexer"
-  - "cre"
+  - "cre/oracle"
   - "packages/*"
+allowBuilds:
+  unrs-resolver: true
